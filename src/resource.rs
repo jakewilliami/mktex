@@ -50,5 +50,8 @@ fn fetch_resource_local(resource: &str) -> String {
 }
 
 fn fetch_resource_remote(resource: &str) -> String {
+    let resource = resource
+        .strip_prefix(format!("{}/{}/", config::GITHUB_USER, config::GITHUB_REPO_NAME).as_str())
+        .unwrap_or(resource);
     remote::get_remote_resource(resource, config::MAIN_BRANCH)
 }
