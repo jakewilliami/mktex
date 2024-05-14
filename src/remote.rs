@@ -1,6 +1,7 @@
 // Fetch resource remotely
 
-#[path = "config.rs"] mod config;
+#[path = "config.rs"]
+mod config;
 use config::*;
 
 use reqwest;
@@ -10,14 +11,12 @@ use serde_json;
 pub fn get_remote_resource(resource: &str, tag: &str) -> String {
     let uri = format!(
         "https://raw.githubusercontent.com/{}/{}/{}/{}",
-        GITHUB_USER,
-        GITHUB_REPO_NAME,
-        tag,
-        resource,
+        GITHUB_USER, GITHUB_REPO_NAME, tag, resource,
     );
     reqwest::blocking::get(uri)
         .expect("Cannot get remote resource")
-        .text().expect("Cannot get text from remote response")
+        .text()
+        .expect("Cannot get text from remote response")
 }
 
 /// Get latest commit hash (SHA1 ID) from the remote repository.
@@ -28,9 +27,7 @@ pub fn get_latest_commit_hash() -> String {
     // https://docs.github.com/en/rest/git/refs?apiVersion=2022-11-28
     let uri = format!(
         "https://api.github.com/repos/{}/{}/git/ref/heads/{}",
-        GITHUB_USER,
-        GITHUB_REPO_NAME,
-        MAIN_BRANCH,
+        GITHUB_USER, GITHUB_REPO_NAME, MAIN_BRANCH,
     );
 
     let client = reqwest::blocking::Client::new();
@@ -40,18 +37,23 @@ pub fn get_latest_commit_hash() -> String {
     headers.append("accept", "application/json".parse().unwrap());
     headers.append("user-agent", "mktex.rs".parse().unwrap());
 
-    let request = client
-        .get(uri)
-        .headers(headers);
+    let request = client.get(uri).headers(headers);
 
-    let body = request.send().expect("Cannot get response from GitHub API")
-        .text().expect("Cannot get text from remote response");
+    let body = request
+        .send()
+        .expect("Cannot get response from GitHub API")
+        .text()
+        .expect("Cannot get text from remote response");
 
-    let commit_data_raw: serde_json::Value = serde_json::from_str(&body)
-        .expect("The JSON response was not well defined");
-    let latest_commit = commit_data_raw.as_object().expect("Cannot parse response as object")
-        .get("object").expect("Cannot get latest object information from remote ref")
-        .get("sha").expect("Cannot get commit hash from response");
+    let commit_data_raw: serde_json::Value =
+        serde_json::from_str(&body).expect("The JSON response was not well defined");
+    let latest_commit = commit_data_raw
+        .as_object()
+        .expect("Cannot parse response as object")
+        .get("object")
+        .expect("Cannot get latest object information from remote ref")
+        .get("sha")
+        .expect("Cannot get commit hash from response");
 
     latest_commit.to_string()
 }

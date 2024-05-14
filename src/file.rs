@@ -1,9 +1,15 @@
 use dialoguer::Confirm;
-use std::{fs, path::{Path, PathBuf}};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
-#[path = "config.rs"] mod config;
-#[path = "sync.rs"] mod sync;
-#[path = "texmf.rs"] mod texmf;
+#[path = "config.rs"]
+mod config;
+#[path = "sync.rs"]
+mod sync;
+#[path = "texmf.rs"]
+mod texmf;
 
 use crate::resource::{fetch_resource, ResourceLocation};
 
@@ -39,15 +45,19 @@ fn write_template(file: LocalResource, dry_run: bool) {
     }
 
     if dry_run {
-        println!("[INFO] Would have written template {:?} to {:?}", &template.template_path, &out_file);
+        println!(
+            "[INFO] Would have written template {:?} to {:?}",
+            &template.template_path, &out_file
+        );
     } else {
         // Write the template file to the specified directory
-        let tmpl_contents = fetch_resource(
-            template.template_path.as_str(),
-            &file.resource_location
-        );
+        let tmpl_contents =
+            fetch_resource(template.template_path.as_str(), &file.resource_location);
 
-        println!("[INFO] Writing template {:?} to {:?}", &template.template_path, &out_file);
+        println!(
+            "[INFO] Writing template {:?} to {:?}",
+            &template.template_path, &out_file
+        );
         fs::write(out_file, tmpl_contents).unwrap();
     }
 }
@@ -55,7 +65,8 @@ fn write_template(file: LocalResource, dry_run: bool) {
 pub fn write_resource(file: LocalResource, dry_run: bool) {
     let file_name = Path::new(&file.resource_path)
         .strip_prefix(config::RESOURCE_PARENT)
-        .unwrap().to_path_buf();
+        .unwrap()
+        .to_path_buf();
 
     // Ensure parent path exists
     let mut local_path = texmf::texmf_local_resources();
@@ -76,31 +87,43 @@ pub fn write_resource(file: LocalResource, dry_run: bool) {
     local_path.push(file_name.file_name().unwrap());
 
     // Write file to local texmf directory
-    let contents = fetch_resource(
-        file.resource_path.as_str(),
-        &file.resource_location
-    );
+    let contents = fetch_resource(file.resource_path.as_str(), &file.resource_location);
 
     // Need to move file to local texmf if possible
     if !texmf::resource_in_local_texmf(&file_name) {
         if dry_run {
-            println!("[INFO] Would have written resource {:?} to {:?}", &file_name, &local_path);
+            println!(
+                "[INFO] Would have written resource {:?} to {:?}",
+                &file_name, &local_path
+            );
         } else {
-            println!("[INFO] Writing resource {:?} to {:?}", &file_name, &local_path);
+            println!(
+                "[INFO] Writing resource {:?} to {:?}",
+                &file_name, &local_path
+            );
             fs::write(&local_path, &contents).unwrap();
         }
     }
 
     // If local (texmf) resource is not in sync with remote, ask user if we should update local
     if !sync::check_resource(&local_path, &contents) {
-        println!("[WARN] Local resource exists but is out of sync with remote ({:?})", file_name);
+        println!(
+            "[WARN] Local resource exists but is out of sync with remote ({:?})",
+            file_name
+        );
         if !dry_run {
-            if Confirm::new()//::with_theme(&dialoguer::theme::ColorfulTheme::default())
-                .with_prompt(format!("Would you like to update the local resource at {:?}?", &local_path))
+            if Confirm::new() //::with_theme(&dialoguer::theme::ColorfulTheme::default())
+                .with_prompt(format!(
+                    "Would you like to update the local resource at {:?}?",
+                    &local_path
+                ))
                 .interact()
                 .unwrap()
             {
-                println!("[INFO] Updating local resource {:?} at {:?}", &file_name, &local_path);
+                println!(
+                    "[INFO] Updating local resource {:?} at {:?}",
+                    &file_name, &local_path
+                );
                 fs::write(&local_path, &contents).unwrap();
             } else {
                 println!("[INFO] Ignoring out-of-sync local file");

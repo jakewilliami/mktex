@@ -1,12 +1,14 @@
 // Fetch resource!
 
 // https://stackoverflow.com/a/73840814/12069968
-#[path = "config.rs"] mod config;
+#[path = "config.rs"]
+mod config;
 // include!("remote.rs");
-#[path = "remote.rs"] mod remote;
+#[path = "remote.rs"]
+mod remote;
 
-use std::{fs, path::Path};
 use home;
+use std::{fs, path::Path};
 
 #[derive(PartialEq)]
 pub enum ResourceLocation {
@@ -22,10 +24,13 @@ pub fn fetch_resource(resource: &str, loc: &ResourceLocation) -> String {
 }
 
 fn fetch_resource_local(resource: &str) -> String {
-    let resource_dir = home::home_dir().expect("Cannot get home directory")
-        .join("projects").join(config::GITHUB_REPO_NAME);
+    let resource_dir = home::home_dir()
+        .expect("Cannot get home directory")
+        .join("projects")
+        .join(config::GITHUB_REPO_NAME);
     if !resource_dir.as_path().exists() {
-        panic!("{}",
+        panic!(
+            "{}",
             format!(
                 "No local resource path at ~/projects/{}/",
                 config::GITHUB_REPO_NAME

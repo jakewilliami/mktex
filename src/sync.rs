@@ -1,4 +1,4 @@
-use sha2::{Sha256, Digest};
+use sha2::{Digest, Sha256};
 use std::{fs, path::PathBuf};
 
 fn get_hash_from_data(data: Vec<u8>) -> String {
