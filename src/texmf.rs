@@ -21,8 +21,7 @@ pub fn texmf() -> Option<PathBuf> {
         .expect("Failed to execute `kpsewhich`");
 
     if output.status.success() {
-        let mut texmf_home = String::from_utf8_lossy(&output.stdout)
-            .into_owned();
+        let mut texmf_home = String::from_utf8_lossy(&output.stdout).into_owned();
 
         // Strip trailing new line
         // https://stackoverflow.com/a/55041833/12069968
@@ -37,8 +36,11 @@ pub fn texmf() -> Option<PathBuf> {
 }
 
 pub fn texmf_local_resources() -> PathBuf {
-    let local_dir = texmf().expect("Cannot get texmf dir")
-        .join("tex").join("latex").join("local");
+    let local_dir = texmf()
+        .expect("Cannot get texmf dir")
+        .join("tex")
+        .join("latex")
+        .join("local");
 
     // Make directory if it doesn't exist
     if !local_dir.as_path().exists() {
@@ -49,9 +51,7 @@ pub fn texmf_local_resources() -> PathBuf {
 }
 
 pub fn resource_in_local_texmf(resource: &PathBuf) -> bool {
-    texmf_local_resources()
-        .join(resource)
-        .as_path().exists()
+    texmf_local_resources().join(resource).as_path().exists()
 }
 
 /*

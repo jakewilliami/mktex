@@ -1,21 +1,16 @@
+use clap::{crate_authors, crate_version, ArgAction, Parser, Subcommand};
 use std::{fs, path::Path, process};
-use clap::{
-    ArgAction,
-    crate_authors,
-    crate_version,
-    Parser,
-    Subcommand,
-};
 
 mod config;
-mod freeze;
-mod texmf;
-mod resource;
 mod file;
+mod freeze;
+mod input;
+mod resource;
+mod texmf;
 
 use config::*;
+use file::{LocalResource, LocalTemplate};
 use resource::{fetch_resource, ResourceLocation};
-use file::{LocalTemplate, LocalResource};
 
 // TODO:
 //   - better logging
@@ -119,7 +114,11 @@ fn main() {
     let cli = Cli::parse();
 
     let resource_location = if let Some(local) = cli.local {
-        if local { ResourceLocation::Local } else { ResourceLocation::Remote }
+        if local {
+            ResourceLocation::Local
+        } else {
+            ResourceLocation::Remote
+        }
     } else {
         ResourceLocation::Remote
     };
@@ -128,9 +127,12 @@ fn main() {
     match cli.command {
         Some(Commands::Freeze) => {
             let cls_contents = fetch_resource(CLS_RESOURCE, &resource_location);
-            println!("{}", freeze::expand_input_paths(cls_contents, &resource_location));
+            println!(
+                "{}",
+                freeze::expand_input_paths(cls_contents, &resource_location)
+            );
             process::exit(0);
-        },
+        }
         Some(Commands::Texmf) => {
             if let Some(texmf_path) = texmf::texmf() {
                 println!("{}", texmf_path.display());
@@ -138,13 +140,17 @@ fn main() {
                 eprintln!("ERROR: Could not find local texmf directory");
             }
             process::exit(0);
-        },
-        None => {},
+        }
+        None => {}
     }
 
     let out_dir = cli.dir.unwrap().to_string();
     let out_file = cli.file.unwrap().to_string();
-    let dry_run = if let Some(dry_run) = cli.dry_run { dry_run } else { false };
+    let dry_run = if let Some(dry_run) = cli.dry_run {
+        dry_run
+    } else {
+        false
+    };
 
     // Make class file
     if let Some(use_class) = cli.class {
@@ -158,7 +164,12 @@ fn main() {
                     out_file: &out_file,
                 }),
             };
-            file::write_resource(cls, dry_run);
+            file::write_resource(cls.clone(), dry_run);
+
+            // Write sourced files required by the class
+            for source_file in input::sourced_files(cls) {
+                file::write_resource(source_file, dry_run)
+            }
         }
     };
 
@@ -166,7 +177,12 @@ fn main() {
     if let Some(use_beamer) = cli.beamer {
         if use_beamer {
             // Custom Beamer theme files
-            for file in vec![BMR_THEME_COLOUR, BMR_THEME_INNER, BMR_THEME_OUTER, BMR_THEME_MAIN] {
+            for file in vec![
+                BMR_THEME_COLOUR,
+                BMR_THEME_INNER,
+                BMR_THEME_OUTER,
+                BMR_THEME_MAIN,
+            ] {
                 let theme_file = Path::new(BMR_THEME_PATH).join(file);
                 let sty = LocalResource {
                     resource_path: theme_file.display().to_string(),
