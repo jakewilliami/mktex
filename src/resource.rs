@@ -7,7 +7,6 @@ mod config;
 #[path = "remote.rs"]
 mod remote;
 
-use home;
 use std::{fs, path::Path};
 
 #[derive(PartialEq)]
@@ -38,14 +37,18 @@ fn fetch_resource_local(resource: &str) -> String {
         )
     }
 
+    let resource = resource
+        .strip_prefix(format!("{}/{}/", config::GITHUB_USER, config::GITHUB_REPO_NAME).as_str())
+        .unwrap_or(resource);
+
     // Adjoining an absolute path replaces the existing path
     // As such, we need to account for these in the resource
     let resource = Path::new(resource.trim_start_matches('/'));
+    let resource_path = resource_dir.join(resource);
 
-    let resource_path = resource_dir.join(&resource);
     fs::read_to_string(resource_path).unwrap()
 }
 
 fn fetch_resource_remote(resource: &str) -> String {
-    remote::get_remote_resource(resource, "master")
+    remote::get_remote_resource(resource, config::MAIN_BRANCH)
 }

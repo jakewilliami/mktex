@@ -13,12 +13,14 @@ mod texmf;
 
 use crate::resource::{fetch_resource, ResourceLocation};
 
+#[derive(Clone)]
 pub struct LocalTemplate<'a> {
     pub template_path: String,
     pub out_dir: &'a String,
     pub out_file: &'a String,
 }
 
+#[derive(Clone)]
 pub struct LocalResource<'a> {
     pub resource_path: String,
     pub resource_location: &'a ResourceLocation,
@@ -63,16 +65,23 @@ fn write_template(file: LocalResource, dry_run: bool) {
 }
 
 pub fn write_resource(file: LocalResource, dry_run: bool) {
-    let file_name = Path::new(&file.resource_path)
+    let file_name = Path::new(&file.resource_path);
+    let file_name = file_name
+        .strip_prefix(format!(
+            "{}/{}/",
+            config::GITHUB_USER,
+            config::GITHUB_REPO_NAME
+        ))
+        .unwrap_or(file_name)
         .strip_prefix(config::RESOURCE_PARENT)
-        .unwrap()
+        .unwrap_or(file_name)
         .to_path_buf();
 
     // Ensure parent path exists
     let mut local_path = texmf::texmf_local_resources();
     let file_parent = &file_name.parent();
     if let Some(file_parent) = file_parent {
-        local_path.push(&file_parent)
+        local_path.push(file_parent)
     }
     if !local_path.exists() {
         if dry_run {
@@ -87,7 +96,7 @@ pub fn write_resource(file: LocalResource, dry_run: bool) {
     local_path.push(file_name.file_name().unwrap());
 
     // Write file to local texmf directory
-    let contents = fetch_resource(file.resource_path.as_str(), &file.resource_location);
+    let contents = fetch_resource(file.resource_path.as_str(), file.resource_location);
 
     // Need to move file to local texmf if possible
     if !texmf::resource_in_local_texmf(&file_name) {

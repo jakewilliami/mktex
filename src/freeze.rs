@@ -4,15 +4,15 @@ mod config;
 mod remote;
 
 // https://stackoverflow.com/a/72397385/12069968
+use crate::input::INPUT_RE;
 use crate::resource::{self, ResourceLocation};
 
 use chrono::prelude::*;
-use regex::{Captures, Regex};
+use regex::Captures;
 
 pub fn expand_input_paths(contents_raw: String, loc: &ResourceLocation) -> String {
     // We want to expand/evaluate lines in LaTeX like `\input{...}`
-    let re = Regex::new(r"\\input\{(?P<path>.+)\}").unwrap();
-    let expanded = re
+    let expanded = INPUT_RE
         .replace_all(&contents_raw, |caps: &Captures| {
             let input_path = caps.name("path").unwrap().as_str();
             fetch_resource(input_path, loc)

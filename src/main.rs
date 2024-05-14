@@ -4,6 +4,7 @@ use std::{fs, path::Path, process};
 mod config;
 mod file;
 mod freeze;
+mod input;
 mod resource;
 mod texmf;
 
@@ -163,7 +164,12 @@ fn main() {
                     out_file: &out_file,
                 }),
             };
-            file::write_resource(cls, dry_run);
+            file::write_resource(cls.clone(), dry_run);
+
+            // Write sourced files required by the class
+            for source_file in input::sourced_files(cls) {
+                file::write_resource(source_file, dry_run)
+            }
         }
     };
 
