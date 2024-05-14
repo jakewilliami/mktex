@@ -1,24 +1,31 @@
-#[path = "config.rs"] mod config;
-#[path = "remote.rs"] mod remote;
+#[path = "config.rs"]
+mod config;
+#[path = "remote.rs"]
+mod remote;
 
 // https://stackoverflow.com/a/72397385/12069968
+use crate::input::INPUT_RE;
 use crate::resource::{self, ResourceLocation};
 
 use chrono::prelude::*;
-use regex::{Captures, Regex};
+use regex::Captures;
 
 pub fn expand_input_paths(contents_raw: String, loc: &ResourceLocation) -> String {
     // We want to expand/evaluate lines in LaTeX like `\input{...}`
-    let re = Regex::new(r"\\input\{(?P<path>.+)\}").unwrap();
-    let expanded = re.replace_all(&contents_raw, |caps: &Captures| {
-        let input_path = caps.name("path").unwrap().as_str();
-        fetch_resource(input_path, loc)
-    }).to_string();
+    let expanded = INPUT_RE
+        .replace_all(&contents_raw, |caps: &Captures| {
+            let input_path = caps.name("path").unwrap().as_str();
+            fetch_resource(input_path, loc)
+        })
+        .to_string();
     add_version_metadata(expanded, loc)
 }
 
 fn fetch_resource(input_path: &str, loc: &ResourceLocation) -> String {
-    let resource_path = input_path.split(config::GITHUB_REPO_NAME).last().expect("Cannot find tex-macros/ repo in input path");
+    let resource_path = input_path
+        .split(config::GITHUB_REPO_NAME)
+        .last()
+        .expect("Cannot find tex-macros/ repo in input path");
     resource::fetch_resource(resource_path, loc)
 }
 
@@ -31,7 +38,7 @@ fn add_version_metadata(contents_raw: String, loc: &ResourceLocation) -> String 
 
     if loc == &ResourceLocation::Remote {
         let latest_commit = remote::get_latest_commit_hash();
-        contents.pop();  // Remove other new line if remote info added
+        contents.pop(); // Remove other new line if remote info added
         contents.push_str(format!("% At commit version {} \n\n", latest_commit).as_str());
     }
 
