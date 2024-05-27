@@ -29,7 +29,6 @@ use resource::{fetch_resource, ResourceLocation};
 //   - author
 //   - general class option?
 //   - bibligraphy file option
-//   - letter option
 //   - formal letter option
 //   - figure option
 //   - poi option
@@ -73,10 +72,19 @@ struct Cli {
 
     /// Use article class
     #[arg(
+        short = 'a',
+        long = "article",
+        action = ArgAction::SetTrue,
+        num_args = 0,
+    )]
+    article: Option<bool>,
+
+    #[arg(
         short = 'c',
         long = "class",
         action = ArgAction::SetTrue,
         num_args = 0,
+        hide = true,
     )]
     class: Option<bool>,
 
@@ -111,7 +119,7 @@ enum Commands {
 }
 
 fn main() {
-    let cli = Cli::parse();
+    let mut cli = Cli::parse();
 
     let resource_location = if let Some(local) = cli.local {
         if local {
@@ -155,6 +163,14 @@ fn main() {
     // Make class file
     if let Some(use_class) = cli.class {
         if use_class {
+            eprintln!(
+                "Warning: --class option is deprecated since v1.8.1.  Use --article instead."
+            );
+            cli.article = Some(true);
+        }
+    }
+    if let Some(use_article) = cli.article {
+        if use_article {
             let cls = LocalResource {
                 resource_path: CLS_RESOURCE.to_string(),
                 resource_location: &resource_location,
