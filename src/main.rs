@@ -98,6 +98,16 @@ struct Cli {
     )]
     letter: Option<bool>,
 
+    /// Use make letter formal
+    #[arg(
+        short = 'f',
+        long = "formal",
+        action = ArgAction::SetTrue,
+        num_args = 0,
+        requires("letter"),
+    )]
+    formal: Option<bool>,
+
     /// Use beamer class
     #[arg(
         short = 'b',
@@ -212,11 +222,20 @@ fn main() {
     if let Some(use_letter) = cli.letter {
         if use_letter {
             opt_used = true;
+            let template = if let Some(formal_letter) = cli.formal {
+                if formal_letter {
+                    LTR_FML_TMPL_RESOURCE
+                } else {
+                    LTR_TMPL_RESOURCE
+                }
+            } else {
+                LTR_TMPL_RESOURCE
+            };
             let cls = LocalResource {
                 resource_path: LTR_RESOURCE.to_string(),
                 resource_location: &resource_location,
                 template: Some(LocalTemplate {
-                    template_path: LTR_TMPL_RESOURCE.to_string(),
+                    template_path: template.to_string(),
                     out_dir: &out_dir,
                     out_file: &out_file,
                 }),
