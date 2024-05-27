@@ -2,6 +2,7 @@ use dialoguer::Confirm;
 use std::{
     fs,
     path::{Path, PathBuf},
+    process,
 };
 
 #[path = "config.rs"]
@@ -42,8 +43,21 @@ fn write_template(file: LocalResource, dry_run: bool) {
     let out_file = template.out_file();
 
     // Check that we are not overwriting a file!
-    if out_file.exists() && !dry_run {
-        panic!("Failed to mktex: file exists")
+    if out_file.exists()
+        && !dry_run
+        && !Confirm::new()
+            .with_prompt(format!(
+                "{:?} already exists.  Would you like to overwrite it?",
+                &out_file
+            ))
+            .interact()
+            .unwrap()
+    {
+        println!(
+            "[WARN] File {:?} already exists; exiting programme",
+            &out_file
+        );
+        process::exit(0);
     }
 
     if dry_run {
