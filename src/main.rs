@@ -29,7 +29,6 @@ use resource::{fetch_resource, ResourceLocation};
 //   - author
 //   - general class option?
 //   - bibligraphy file option
-//   - letter option
 //   - formal letter option
 //   - figure option
 //   - poi option
@@ -41,6 +40,7 @@ use resource::{fetch_resource, ResourceLocation};
     version = crate_version!(),
     allow_missing_positional = true,
     subcommand_negates_reqs = true,
+    arg_required_else_help = true,
 )]
 /// Make LaTeX projects with custom macros.
 struct Cli {
@@ -73,12 +73,40 @@ struct Cli {
 
     /// Use article class
     #[arg(
+        short = 'a',
+        long = "article",
+        action = ArgAction::SetTrue,
+        num_args = 0,
+    )]
+    article: Option<bool>,
+
+    #[arg(
         short = 'c',
         long = "class",
         action = ArgAction::SetTrue,
         num_args = 0,
+        hide = true,
     )]
     class: Option<bool>,
+
+    /// Use letter class
+    #[arg(
+        short = 'L',
+        long = "letter",
+        action = ArgAction::SetTrue,
+        num_args = 0,
+    )]
+    letter: Option<bool>,
+
+    /// Use make letter formal
+    #[arg(
+        short = 'f',
+        long = "formal",
+        action = ArgAction::SetTrue,
+        num_args = 0,
+        requires("letter"),
+    )]
+    formal: Option<bool>,
 
     /// Use beamer class
     #[arg(
@@ -100,18 +128,23 @@ struct Cli {
 
     #[command(subcommand)]
     command: Option<Commands>,
+
+    // Trailing arguments
+    // https://stackoverflow.com/a/77512007/
+    #[arg(trailing_var_arg = true, allow_hyphen_values = true, hide = true)]
+    rem: Vec<String>,
 }
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Freeze latest class files
+    /// Freeze latest article class files
     Freeze,
     /// Print local texmf directory
     Texmf,
 }
 
 fn main() {
-    let cli = Cli::parse();
+    let mut cli = Cli::parse();
 
     let resource_location = if let Some(local) = cli.local {
         if local {
@@ -137,13 +170,15 @@ fn main() {
             if let Some(texmf_path) = texmf::texmf() {
                 println!("{}", texmf_path.display());
             } else {
-                eprintln!("ERROR: Could not find local texmf directory");
+                eprintln!("[ERROR] Could not find local texmf directory");
+                process::exit(1);
             }
             process::exit(0);
         }
         None => {}
     }
 
+    let mut opt_used = false;
     let out_dir = cli.dir.unwrap().to_string();
     let out_file = cli.file.unwrap().to_string();
     let dry_run = if let Some(dry_run) = cli.dry_run {
@@ -152,9 +187,17 @@ fn main() {
         false
     };
 
-    // Make class file
+    // Make article class file
     if let Some(use_class) = cli.class {
         if use_class {
+            opt_used = true;
+            eprintln!("[WARN] --class option is deprecated since v1.8.1.  Use --article instead.");
+            cli.article = Some(true);
+        }
+    }
+    if let Some(use_article) = cli.article {
+        if use_article {
+            opt_used = true;
             let cls = LocalResource {
                 resource_path: CLS_RESOURCE.to_string(),
                 resource_location: &resource_location,
@@ -167,15 +210,51 @@ fn main() {
             file::write_resource(cls.clone(), dry_run);
 
             // Write sourced files required by the class
+            println!("[INFO] Checking sync status of local source files...");
             for source_file in input::sourced_files(cls) {
                 file::write_resource(source_file, dry_run)
             }
+            println!("[INFO] Done")
+        }
+    };
+
+    // Make letter file
+    if let Some(use_letter) = cli.letter {
+        if use_letter {
+            opt_used = true;
+            let template = if let Some(formal_letter) = cli.formal {
+                if formal_letter {
+                    LTR_FML_TMPL_RESOURCE
+                } else {
+                    LTR_TMPL_RESOURCE
+                }
+            } else {
+                LTR_TMPL_RESOURCE
+            };
+            let cls = LocalResource {
+                resource_path: LTR_RESOURCE.to_string(),
+                resource_location: &resource_location,
+                template: Some(LocalTemplate {
+                    template_path: template.to_string(),
+                    out_dir: &out_dir,
+                    out_file: &out_file,
+                }),
+            };
+            file::write_resource(cls.clone(), dry_run);
+
+            // Write sourced files required by the class
+            println!("[INFO] Checking sync status of local source files...");
+            for source_file in input::sourced_files(cls) {
+                file::write_resource(source_file, dry_run)
+            }
+            println!("[INFO] Done")
         }
     };
 
     // Make beamer file
     if let Some(use_beamer) = cli.beamer {
         if use_beamer {
+            opt_used = true;
             // Custom Beamer theme files
             for file in vec![
                 BMR_THEME_COLOUR,
@@ -205,4 +284,19 @@ fn main() {
             file::write_resource(cls, dry_run);
         }
     }
+
+    // Check if dry run is given without other options
+    if dry_run && !opt_used {
+        eprintln!("[ERROR] --dry-run argument passed without another option.  Cannot dry run with prespecified no intent.  Use -h for help.");
+        process::exit(1);
+    }
+
+    // Check that file is parsed with some other options
+    if !opt_used {
+        eprintln!("[ERROR] Must used on of the command line options if a file is specified.  Use --h for help.  File specified: {:?}", &out_file);
+        process::exit(1);
+    }
+
+    // Exit programme
+    process::exit(0);
 }
