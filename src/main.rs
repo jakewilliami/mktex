@@ -40,6 +40,7 @@ use resource::{fetch_resource, ResourceLocation};
     version = crate_version!(),
     allow_missing_positional = true,
     subcommand_negates_reqs = true,
+    arg_required_else_help = true,
 )]
 /// Make LaTeX projects with custom macros.
 struct Cli {
