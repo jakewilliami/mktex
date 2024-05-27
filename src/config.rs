@@ -10,6 +10,11 @@ pub const RESOURCE_PARENT: &str = "class/";
 pub const CLS_RESOURCE: &str = "class/arteacle.cls";
 pub const TMPL_RESOURCE: &str = "templates/arteacle.tex";
 
+// Lettear Resources
+pub const LTR_RESOURCE: &str = "class/lettear.cls";
+pub const LTR_TMPL_RESOURCE: &str = "templates/letter/lettear.tex";
+pub const LTR_FML_TMPL_RESOURCE: &str = "templates/letter/lettear-formal.tex";
+
 // Teamer Resources
 pub const BMR_RESOURCE: &str = "class/teamer.cls";
 pub const BMR_TMPL_RESOURCE: &str = "templates/teamer.tex";

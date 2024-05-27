@@ -89,6 +89,15 @@ struct Cli {
     )]
     class: Option<bool>,
 
+    /// Use letter class
+    #[arg(
+        short = 'L',
+        long = "letter",
+        action = ArgAction::SetTrue,
+        num_args = 0,
+    )]
+    letter: Option<bool>,
+
     /// Use beamer class
     #[arg(
         short = 'b',
@@ -168,7 +177,7 @@ fn main() {
         false
     };
 
-    // Make class file
+    // Make article class file
     if let Some(use_class) = cli.class {
         if use_class {
             opt_used = true;
@@ -184,6 +193,30 @@ fn main() {
                 resource_location: &resource_location,
                 template: Some(LocalTemplate {
                     template_path: TMPL_RESOURCE.to_string(),
+                    out_dir: &out_dir,
+                    out_file: &out_file,
+                }),
+            };
+            file::write_resource(cls.clone(), dry_run);
+
+            // Write sourced files required by the class
+            println!("[INFO] Checking sync status of local source files...");
+            for source_file in input::sourced_files(cls) {
+                file::write_resource(source_file, dry_run)
+            }
+            println!("[INFO] Done")
+        }
+    };
+
+    // Make letter file
+    if let Some(use_letter) = cli.letter {
+        if use_letter {
+            opt_used = true;
+            let cls = LocalResource {
+                resource_path: LTR_RESOURCE.to_string(),
+                resource_location: &resource_location,
+                template: Some(LocalTemplate {
+                    template_path: LTR_TMPL_RESOURCE.to_string(),
                     out_dir: &out_dir,
                     out_file: &out_file,
                 }),
