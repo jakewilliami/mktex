@@ -191,9 +191,11 @@ fn main() {
             file::write_resource(cls.clone(), dry_run);
 
             // Write sourced files required by the class
+            println!("[INFO] Checking sync status of local source files...");
             for source_file in input::sourced_files(cls) {
                 file::write_resource(source_file, dry_run)
             }
+            println!("[INFO] Done")
         }
     };
 
