@@ -53,11 +53,7 @@ fn write_template(file: LocalResource, dry_run: bool) {
             .interact()
             .unwrap()
     {
-        println!(
-            "[WARN] File {:?} already exists; exiting programme",
-            &out_file
-        );
-        process::exit(0);
+        println!("[WARN] File {:?} already exists", &out_file);
     }
 
     if dry_run {
