@@ -54,6 +54,7 @@ fn write_template(file: LocalResource, dry_run: bool) {
             .unwrap()
     {
         println!("[WARN] File {:?} already exists", &out_file);
+        return;
     }
 
     if dry_run {

@@ -1,6 +1,6 @@
 [package]
 name = "mktex"
-version = "1.9.1"
+version = "1.9.2"
 authors = ["Jake W. Ireland <jakewilliami@icloud.com>"]
 edition = "2021"
 
