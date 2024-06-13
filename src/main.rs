@@ -1,11 +1,14 @@
 use clap::{crate_authors, crate_version, ArgAction, Parser, Subcommand};
-use std::{fs, path::Path, process};
+use std::{path::Path, process};
 
 mod config;
 mod file;
 mod freeze;
 mod input;
+mod local;
+mod remote;
 mod resource;
+mod sync;
 mod texmf;
 
 use config::*;
@@ -256,7 +259,7 @@ fn main() {
         if use_beamer {
             opt_used = true;
             // Custom Beamer theme files
-            for file in vec![
+            for file in [
                 BMR_THEME_COLOUR,
                 BMR_THEME_INNER,
                 BMR_THEME_OUTER,

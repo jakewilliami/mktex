@@ -1,9 +1,6 @@
+use super::{config, file::LocalResource, resource::fetch_resource};
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
-
-use crate::config;
-use crate::file::LocalResource;
-use crate::resource::fetch_resource;
 
 lazy_static! {
     pub static ref INPUT_RE: Regex = Regex::new(

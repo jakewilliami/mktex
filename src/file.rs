@@ -1,18 +1,13 @@
+use super::{
+    config,
+    resource::{fetch_resource, ResourceLocation},
+    sync, texmf,
+};
 use dialoguer::Confirm;
 use std::{
     fs,
     path::{Path, PathBuf},
-    process,
 };
-
-#[path = "config.rs"]
-mod config;
-#[path = "sync.rs"]
-mod sync;
-#[path = "texmf.rs"]
-mod texmf;
-
-use crate::resource::{fetch_resource, ResourceLocation};
 
 #[derive(Clone)]
 pub struct LocalTemplate<'a> {
@@ -31,7 +26,7 @@ pub struct LocalResource<'a> {
 impl LocalTemplate<'_> {
     fn out_file(&self) -> PathBuf {
         let mut path = PathBuf::from(&self.out_dir);
-        path.push(&self.out_file);
+        path.push(self.out_file);
         path
     }
 }
@@ -64,8 +59,7 @@ fn write_template(file: LocalResource, dry_run: bool) {
         );
     } else {
         // Write the template file to the specified directory
-        let tmpl_contents =
-            fetch_resource(template.template_path.as_str(), &file.resource_location);
+        let tmpl_contents = fetch_resource(template.template_path.as_str(), file.resource_location);
 
         println!(
             "[INFO] Writing template {:?} to {:?}",

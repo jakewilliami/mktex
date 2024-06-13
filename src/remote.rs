@@ -1,11 +1,5 @@
 // Fetch resource remotely
-
-#[path = "config.rs"]
-mod config;
-use config::*;
-
-use reqwest;
-use serde_json;
+use super::config::*;
 
 // use "master" for tag
 pub fn get_remote_resource(resource: &str, tag: &str) -> String {
@@ -23,7 +17,7 @@ pub fn get_remote_resource(resource: &str, tag: &str) -> String {
 ///
 /// This method uses GitHub's repo API to fetch HEAD information at
 /// the main branch (in this case, master).
-pub fn get_latest_commit_hash() -> String {
+pub fn latest_commit_hash() -> String {
     // https://docs.github.com/en/rest/git/refs?apiVersion=2022-11-28
     let uri = format!(
         "https://api.github.com/repos/{}/{}/git/ref/heads/{}",

@@ -1,12 +1,5 @@
 // Fetch resource!
-
-// https://stackoverflow.com/a/73840814/12069968
-#[path = "config.rs"]
-mod config;
-// include!("remote.rs");
-#[path = "remote.rs"]
-mod remote;
-
+use super::{config, remote};
 use std::{fs, path::Path};
 
 #[derive(PartialEq)]

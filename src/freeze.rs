@@ -1,12 +1,9 @@
-#[path = "config.rs"]
-mod config;
-#[path = "remote.rs"]
-mod remote;
-
-// https://stackoverflow.com/a/72397385/12069968
-use crate::input::INPUT_RE;
-use crate::resource::{self, ResourceLocation};
-
+use super::{
+    config,
+    input::INPUT_RE,
+    remote,
+    resource::{self, ResourceLocation},
+};
 use chrono::prelude::*;
 use regex::Captures;
 
@@ -37,7 +34,7 @@ fn add_version_metadata(contents_raw: String, loc: &ResourceLocation) -> String 
     contents.push_str(format!("% Frozen version at {}\n\n", formatted_date).as_str());
 
     if loc == &ResourceLocation::Remote {
-        let latest_commit = remote::get_latest_commit_hash();
+        let latest_commit = remote::latest_commit_hash();
         contents.pop(); // Remove other new line if remote info added
         contents.push_str(format!("% At commit version {} \n\n", latest_commit).as_str());
     }
