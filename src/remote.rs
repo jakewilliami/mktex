@@ -47,9 +47,16 @@ pub fn latest_commit_hash() -> String {
         .get("object")
         .expect("Cannot get latest object information from remote ref")
         .get("sha")
-        .expect("Cannot get commit hash from response");
+        .expect("Cannot get commit hash from response")
+        .as_str()
+        .expect("Cannot parse commit hash as str")
+        .to_string();
 
-    latest_commit.to_string()
+    // https://stackoverflow.com/a/38461750/
+    match latest_commit.char_indices().nth(SHORT_HASH_LENGTH) {
+        None => latest_commit,
+        Some((idx, _)) => (latest_commit[..idx]).to_string(),
+    }
 }
 
 /*

@@ -1,13 +1,22 @@
 use super::{
-    config,
+    config, local, remote,
     resource::{fetch_resource, ResourceLocation},
     sync, texmf,
 };
+// use super::{config, file::LocalResource, resource::fetch_resource};
 use dialoguer::Confirm;
+use lazy_static::lazy_static;
+use regex::Regex;
 use std::{
     fs,
     path::{Path, PathBuf},
 };
+
+lazy_static! {
+    pub static ref DOCUMENT_CLASS_RE: Regex =
+        Regex::new(r"(?<documentclass>\\documentclass(\[(?<opts>.+)\])?\{(?<class>\w+)\})")
+            .unwrap();
+}
 
 #[derive(Clone)]
 pub struct LocalTemplate<'a> {
@@ -60,6 +69,7 @@ fn write_template(file: LocalResource, dry_run: bool) {
     } else {
         // Write the template file to the specified directory
         let tmpl_contents = fetch_resource(template.template_path.as_str(), file.resource_location);
+        let tmpl_contents = add_template_resource_version(tmpl_contents, file.resource_location);
 
         println!(
             "[INFO] Writing template {:?} to {:?}",
@@ -148,4 +158,18 @@ pub fn write_resource(file: LocalResource, dry_run: bool) {
     if file.template.is_some() {
         write_template(file, dry_run);
     }
+}
+
+fn add_template_resource_version(tmpl_contents: String, loc: &ResourceLocation) -> String {
+    let commit_hash = match loc {
+        ResourceLocation::Local => local::latest_local_commit_hash(),
+        ResourceLocation::Remote => remote::latest_commit_hash(),
+    };
+
+    DOCUMENT_CLASS_RE
+        .replace(
+            &tmpl_contents,
+            format!("$documentclass  % class version {}", commit_hash),
+        )
+        .to_string()
 }

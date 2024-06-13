@@ -2,8 +2,10 @@
 pub const GITHUB_USER: &str = "jakewilliami";
 pub const GITHUB_REPO_NAME: &str = "tex-macros";
 pub const MAIN_BRANCH: &str = "master";
+pub const SHORT_HASH_LENGTH: usize = 7;
 
 // Base Resource Path
+pub const RESOURCE_ROOT: &str = "projects/";
 pub const RESOURCE_PARENT: &str = "class/";
 
 // Arteacle Resources

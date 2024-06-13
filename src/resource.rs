@@ -1,5 +1,5 @@
 // Fetch resource!
-use super::{config, remote};
+use super::{config, local, remote};
 use std::{fs, path::Path};
 
 #[derive(PartialEq)]
@@ -16,20 +16,7 @@ pub fn fetch_resource(resource: &str, loc: &ResourceLocation) -> String {
 }
 
 fn fetch_resource_local(resource: &str) -> String {
-    let resource_dir = home::home_dir()
-        .expect("Cannot get home directory")
-        .join("projects")
-        .join(config::GITHUB_REPO_NAME);
-    if !resource_dir.as_path().exists() {
-        panic!(
-            "{}",
-            format!(
-                "No local resource path at ~/projects/{}/",
-                config::GITHUB_REPO_NAME
-            )
-        )
-    }
-
+    let resource_dir = local::local_resource_path();
     let resource = resource
         .strip_prefix(format!("{}/{}/", config::GITHUB_USER, config::GITHUB_REPO_NAME).as_str())
         .unwrap_or(resource);
@@ -38,7 +25,6 @@ fn fetch_resource_local(resource: &str) -> String {
     // As such, we need to account for these in the resource
     let resource = Path::new(resource.trim_start_matches('/'));
     let resource_path = resource_dir.join(resource);
-
     fs::read_to_string(resource_path).unwrap()
 }
 
