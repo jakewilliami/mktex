@@ -2,7 +2,7 @@
 
 ## Description
 
-A simple command line utility to make working with personal common templates/classes easier.
+A simple command line utility to make working with [personal common templates/classes](https://github.com/jakewilliami/tex-macros/) easier.
 
 ## Quick Start
 
