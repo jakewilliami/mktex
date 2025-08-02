@@ -1,4 +1,4 @@
-use clap::{crate_authors, crate_version, ArgAction, Parser, Subcommand};
+use clap::{ArgAction, Parser, Subcommand, crate_authors, crate_version};
 use std::{path::Path, process};
 
 mod config;
@@ -13,7 +13,7 @@ mod texmf;
 
 use config::*;
 use file::{LocalResource, LocalTemplate};
-use resource::{fetch_resource, ResourceLocation};
+use resource::{ResourceLocation, fetch_resource};
 
 // TODO:
 //   - better logging
@@ -184,11 +184,7 @@ fn main() {
     let mut opt_used = false;
     let out_dir = cli.dir.unwrap().to_string();
     let out_file = cli.file.unwrap().to_string();
-    let dry_run = if let Some(dry_run) = cli.dry_run {
-        dry_run
-    } else {
-        false
-    };
+    let dry_run = cli.dry_run.unwrap_or_default();
 
     // Make article class file
     if let Some(use_class) = cli.class {
@@ -290,13 +286,18 @@ fn main() {
 
     // Check if dry run is given without other options
     if dry_run && !opt_used {
-        eprintln!("[ERROR] --dry-run argument passed without another option.  Cannot dry run with prespecified no intent.  Use -h for help.");
+        eprintln!(
+            "[ERROR] --dry-run argument passed without another option.  Cannot dry run with prespecified no intent.  Use -h for help."
+        );
         process::exit(1);
     }
 
     // Check that file is parsed with some other options
     if !opt_used {
-        eprintln!("[ERROR] Must used on of the command line options if a file is specified.  Use --h for help.  File specified: {:?}", &out_file);
+        eprintln!(
+            "[ERROR] Must used on of the command line options if a file is specified.  Use --h for help.  File specified: {:?}",
+            &out_file
+        );
         process::exit(1);
     }
 

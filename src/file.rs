@@ -1,6 +1,6 @@
 use super::{
     config, local, remote,
-    resource::{fetch_resource, ResourceLocation},
+    resource::{ResourceLocation, fetch_resource},
     sync, texmf,
 };
 // use super::{config, file::LocalResource, resource::fetch_resource};
